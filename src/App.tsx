@@ -7,6 +7,7 @@ import { SpotifyProvider } from './context/SpotifyContext';
 import { Sidebar } from './components/spotify/Sidebar';
 import { MainView } from './components/spotify/MainView';
 import { Player } from './components/spotify/Player';
+import { ProfileSetupModal } from './components/spotify/ProfileSetupModal';
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
           <MainView />
         </div>
         <Player />
+        <ProfileSetupModal />
       </div>
     </SpotifyProvider>
   );

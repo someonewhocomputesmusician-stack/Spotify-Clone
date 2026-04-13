@@ -26,7 +26,9 @@
         "displayName": { "type": "string", "description": "User's display name" },
         "email": { "type": "string", "description": "User's email address" },
         "photoURL": { "type": "string", "description": "User's profile photo URL" },
-        "role": { "type": "string", "enum": ["user", "admin"], "description": "User's role" }
+        "role": { "type": "string", "enum": ["user", "admin"], "description": "User's role" },
+        "profileType": { "type": "string", "enum": ["listener", "artist"], "description": "Type of profile" },
+        "isProfileSetup": { "type": "boolean", "description": "Whether the profile setup is complete" }
       },
       "required": ["uid", "email"]
     }

@@ -19,9 +19,11 @@ import { User } from 'firebase/auth';
 
 interface SpotifyContextType {
   user: User | null;
+  userProfile: any | null;
   isAuthReady: boolean;
   login: () => Promise<void>;
   logout: () => Promise<void>;
+  updateProfile: (data: { profileType: 'listener' | 'artist', isProfileSetup: boolean }) => Promise<void>;
   currentTrack: Track | null;
   isPlaying: boolean;
   volume: number;
@@ -47,6 +49,7 @@ const SpotifyContext = createContext<SpotifyContextType | undefined>(undefined);
 
 export const SpotifyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<any | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [userTracks, setUserTracks] = useState<Track[]>([]);
   const [currentTrack, setCurrentTrack] = useState<Track | null>(MOCK_TRACKS[0]);
@@ -64,12 +67,13 @@ export const SpotifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Auth listener
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    let unsubscribeProfile: (() => void) | null = null;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-      setIsAuthReady(true);
       
       if (currentUser) {
-        // Sync user to Firestore
+        // Sync user to Firestore (initial sync)
         const userRef = doc(db, 'users', currentUser.uid);
         await setDoc(userRef, {
           uid: currentUser.uid,
@@ -78,9 +82,24 @@ export const SpotifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
           photoURL: currentUser.photoURL,
           role: 'user' // Default role
         }, { merge: true });
+
+        // Listen to user profile changes
+        unsubscribeProfile = onSnapshot(userRef, (doc) => {
+          if (doc.exists()) {
+            setUserProfile(doc.data());
+          }
+          setIsAuthReady(true);
+        });
+      } else {
+        setUserProfile(null);
+        setIsAuthReady(true);
       }
     });
-    return unsubscribe;
+
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeProfile) unsubscribeProfile();
+    };
   }, []);
 
   // Firestore tracks listener
@@ -112,9 +131,21 @@ export const SpotifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const logout = async () => {
     try {
       await auth.signOut();
+      setUserProfile(null);
       setView('home');
     } catch (error) {
       console.error("Logout failed:", error);
+    }
+  };
+
+  const updateProfile = async (data: { profileType: 'listener' | 'artist', isProfileSetup: boolean }) => {
+    if (!user) return;
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      await setDoc(userRef, data, { merge: true });
+    } catch (error) {
+      console.error("Update profile failed:", error);
+      throw error;
     }
   };
 
@@ -225,9 +256,11 @@ export const SpotifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   return (
     <SpotifyContext.Provider value={{
       user,
+      userProfile,
       isAuthReady,
       login,
       logout,
+      updateProfile,
       currentTrack,
       isPlaying,
       volume,

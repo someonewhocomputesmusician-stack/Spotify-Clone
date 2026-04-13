@@ -13,6 +13,8 @@ service cloud.firestore {
     //   - email: string (required) - User's email address
     //   - photoURL: string (optional) - User's profile photo URL
     //   - role: string (required) - ['user', 'admin']
+    //   - profileType: string (optional) - ['listener', 'artist']
+    //   - isProfileSetup: bool (optional) - Whether profile is setup
     //
     // Collection: tracks
     // Document ID: {trackId}
@@ -53,7 +55,9 @@ service cloud.firestore {
              data.email is string &&
              data.role in ['user', 'admin'] &&
              (!('displayName' in data) || (data.displayName is string && data.displayName.size() < 100)) &&
-             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() < 500));
+             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() < 500)) &&
+             (!('profileType' in data) || data.profileType in ['listener', 'artist']) &&
+             (!('isProfileSetup' in data) || data.isProfileSetup is bool);
     }
 
     function isValidTrack(data) {

@@ -22,7 +22,9 @@ const SidebarItem: React.FC<{ icon: React.ReactNode; label: string; active?: boo
 );
 
 export const Sidebar: React.FC = () => {
-  const { view, setView, sidebarCollapsed, toggleSidebar, user, login, logout, isAuthReady } = useSpotify();
+  const { view, setView, sidebarCollapsed, toggleSidebar, user, userProfile, login, logout, isAuthReady, updateProfile } = useSpotify();
+
+  const isArtist = userProfile?.profileType === 'artist';
 
   return (
     <div className={cn(
@@ -44,7 +46,7 @@ export const Sidebar: React.FC = () => {
           onClick={() => setView('search')}
           collapsed={sidebarCollapsed}
         />
-        {user && (
+        {user && isArtist && (
           <SidebarItem 
             icon={<Upload size={24} />} 
             label="Upload" 
@@ -164,12 +166,26 @@ export const Sidebar: React.FC = () => {
                 {!sidebarCollapsed && (
                   <div className="flex flex-col min-w-0">
                     <span className="text-white text-xs font-bold truncate">{user.displayName}</span>
-                    <button 
-                      onClick={logout}
-                      className="text-zinc-400 text-[10px] hover:text-white text-left"
-                    >
-                      Log out
-                    </button>
+                    <span className="text-zinc-500 text-[10px] uppercase tracking-wider font-bold">
+                      {userProfile?.profileType || 'User'}
+                    </span>
+                    <div className="flex gap-2 mt-1">
+                      <button 
+                        onClick={logout}
+                        className="text-zinc-400 text-[10px] hover:text-white"
+                      >
+                        Log out
+                      </button>
+                      <button 
+                        onClick={() => updateProfile({ 
+                          profileType: userProfile?.profileType === 'artist' ? 'listener' : 'artist',
+                          isProfileSetup: true 
+                        })}
+                        className="text-green-500 text-[10px] hover:text-green-400 font-bold"
+                      >
+                        Switch to {userProfile?.profileType === 'artist' ? 'Listener' : 'Artist'}
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
