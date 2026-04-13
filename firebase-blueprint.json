@@ -1,0 +1,44 @@
+{
+  "entities": {
+    "Track": {
+      "title": "Track",
+      "description": "A music track in the library",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier" },
+        "title": { "type": "string", "description": "Track title" },
+        "artist": { "type": "string", "description": "Artist name" },
+        "album": { "type": "string", "description": "Album name" },
+        "coverUrl": { "type": "string", "description": "URL to cover art" },
+        "audioUrl": { "type": "string", "description": "URL to audio file" },
+        "duration": { "type": "number", "description": "Duration in seconds" },
+        "userId": { "type": "string", "description": "ID of the user who uploaded the track" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
+      },
+      "required": ["title", "artist", "audioUrl", "userId"]
+    },
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "displayName": { "type": "string", "description": "User's display name" },
+        "email": { "type": "string", "description": "User's email address" },
+        "photoURL": { "type": "string", "description": "User's profile photo URL" },
+        "role": { "type": "string", "enum": ["user", "admin"], "description": "User's role" }
+      },
+      "required": ["uid", "email"]
+    }
+  },
+  "firestore": {
+    "/tracks/{trackId}": {
+      "schema": "Track",
+      "description": "Global collection of music tracks"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Private user profile data"
+    }
+  }
+}
